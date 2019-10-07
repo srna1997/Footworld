@@ -1,0 +1,86 @@
+@if(Auth::Admin())
+// ako zelimo da samo admin moze uraditi nesto
+@endif
+
+promijeniti lsapp u footworld
+ubaciti da se moze komentirati u blogu,napraviti bazu za spremanje komentara
+Klubovi,igraci napraviti, sve, db itd
+admin page 
+dizajn
+footer napravitit
+sweetalert??
+font awesome
+
+
+public function store(Request $request, Club $club)
+    {
+        $this->validate($request, [
+            'fname' => 'required',
+            'lname' => 'required',
+            'age' => 'required',
+            'country' => 'required',
+            'position' => 'required',
+            'image' => 'image|nullable|max:1999',
+            'text' => 'required',
+            
+
+            
+        ]);
+        
+        //Handle File Upload
+        if($request->hasFile('image')){
+            $fileNameWithExt = $request->file('image')->getClientOriginalName();
+            $filename = pathinfo($fileNameWithExt,PATHINFO_FILENAME);
+            $extension = $request->file('image')->getClientOriginalExtension();
+            $fileNameToStore = $filename.'_'.time().'.'.$extension;
+            $path = $request->file('image')->storeAs('public/image',$fileNameToStore);
+        }
+        else{
+            $fileNameToStore = 'noimage.jpg';
+
+        }
+        //create Player
+        
+        $player = new Player;
+        $player->fname = $request->input('fname');
+        $player->lname = $request->input('lname');
+        $player->age = $request->input('age');
+        $player->country = $request->input('country');
+        $player->position = $request->input('position');
+        $player->image = $fileNameToStore;
+        $player->text = $request->input('text');
+        //$player->club()->associate($club_id);
+        //$player->club_id = $request->get('user_id');
+        
+        //$player->club()->associate(Club::find('club_id'));
+        //$player->save();
+        //$club = Club::find($club_id);
+        $club = Club::find($request->get('club_id'));
+        dd($request->get('club_id'));
+        $club->player()->save($player);
+        //dd($request->all);
+        return redirect('/admin/player')->with('success','New player created');
+
+        ///////// ADMIN 
+
+        if(Auth::user()->role_id == 1 || Auth::user()->role_id == 2)
+        {
+                NADAJMO SE USPJELO
+        }
+        
+        <select name="role" value="" class="form-control">
+
+        @foreach($roles as $role)
+            <option value="{{$role->id}}">{{$role->role}}</option>        
+        @endforeach
+    </select><br>
+
+
+{{ Form::open(['action' => ['AdminController@update',$user->id],'method'=>'POST']) }}
+    <select name="role" class="form-control" onchange="this.form.submit()">
+        <option selected>{{ $user->role}}</option>
+        @foreach($role as $r)
+            <option value="{{$r->role}}">{{$r->role}}</option>        
+        @endforeach
+    </select>
+{{ Form::close() }}
